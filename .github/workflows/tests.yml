@@ -34,9 +34,50 @@ jobs:
   test-macos-intel:
     runs-on: macos-15-intel
     steps:
-       - uses: actions/checkout@v4
-       - uses: actions/setup-python@v5
-         with:
-           python-version: "3.12"
-       - run: pip install -e ".[test]"
-       - run: pytest -v tests/
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create virtual environment
+        run: python -m venv venv
+
+      - name: Activate virtual environment
+        run: source venv/bin/activate
+        shell: bash
+
+      - name: Upgrade pip, setuptools, wheel
+        run: pip install --upgrade pip setuptools wheel
+
+      # Essaie d'abord les wheels binaires
+      - name: Install binary wheels for critical packages
+        run: |
+          pip install --only-binary=:all: finufft numba llvmlite || true
+        # Le "|| true" permet de continuer même si l'installation échoue
+
+      # Installe OpenMP et LLVM (au cas où les wheels n'existent pas)
+      - name: Install OpenMP and LLVM
+        if: failure()  # Seulement si l'étape précédente a échoué
+        run: |
+          brew update
+          brew install libomp llvm
+
+      # Configure l'environnement pour LLVM et OpenMP
+      - name: Set LLVM and OpenMP environment
+        if: failure()  # Seulement si nécessaire
+        run: |
+          echo "LLVM_CONFIG=$(brew --prefix llvm)/bin/llvm-config" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix llvm)" >> $GITHUB_ENV
+          echo "OPENMP_ROOT=$(brew --prefix libomp)" >> $GITHUB_ENV
+
+      # Installe le package (avec ou sans wheels)
+      - name: Install package with extras
+        run: pip install -e ".[benchmark,test]"
+        env:
+          CFLAGS: "-I$(brew --prefix libomp)/include"
+          CXXFLAGS: "-I$(brew --prefix libomp)/include"
+          LDFLAGS: "-L$(brew --prefix libomp)/lib -lomp"
+
+      - name: Run tests
+        run: pytest -v tests/
