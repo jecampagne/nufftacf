@@ -1,0 +1,48 @@
+# --- Byte-compiled / optimized / DLL files ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# --- Numba on-disk JIT cache (created next to the cached functions) ---
+*.nbi
+*.nbc
+
+# --- Distribution / packaging ---
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# --- Unit test / coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# --- Jupyter ---
+.ipynb_checkpoints
+
+# --- Environments ---
+.env
+.venv
+env/
+venv/
+
+# --- mypy / ruff ---
+.mypy_cache/
+.ruff_cache/
+
+# --- IDE ---
+.vscode/
+.idea/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# NOTE: benchmark/*.csv et benchmark/*.png sont VOLONTAIREMENT suivis par git
+# (résultats de référence + figures de l'article) -- ne pas les ignorer ici.
