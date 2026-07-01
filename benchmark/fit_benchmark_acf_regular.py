@@ -127,10 +127,12 @@ def analyze_group(df, kernel, algo, n_boot, seed):
 
     repeats_by_n = {n: g["time_s"].to_numpy() for n, g in sub.groupby("n_points")}
     n_values = np.array(sorted(repeats_by_n.keys()), dtype=float)
-    t_min = np.array([repeats_by_n[n].min() for n in n_values])
+    #t_min = np.array([repeats_by_n[n].min() for n in n_values])
+    t_min = np.array([np.median(repeats_by_n[n]) for n in n_values])
 
     model_func, model_label = get_model(kernel, algo)
     p0 = [1e-7, 0.01] if algo == "pastas" else [1e-7, 0.001]
+
 
     params = robust_fit(n_values, t_min, model_func, p0)
     a, ovh = params
@@ -196,9 +198,9 @@ def plot_results(results, output_prefix):
                 LINESTYLES[algo],
                 color=COLORS[algo],
                 label=(
-                    f"fit {r['model']} (a={r['a']:.2e}\u00b1{r['a_err']:.1e}, "
-                    f"ovh={r['ovh_ms']:.1f}\u00b1{r['ovh_err_ms']:.1f} ms, "
-                    f"R\u00b2={r['r2']:.3f})"
+                    f"fit {r['model']} (a={r['a']:.2e}$\pm${r['a_err']:.1e}, "
+                    f"ovh={r['ovh_ms']:.1f}$\pm${r['ovh_err_ms']:.1f} ms, "
+                    f"$R^2$={r['r2']:.3f})"
                 ),
             )
         ax.set_xscale("log")

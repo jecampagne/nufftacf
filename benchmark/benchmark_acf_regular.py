@@ -207,7 +207,7 @@ if __name__ == "__main__":
         help="Skip Pastas 'gaussian'/'rectangle' above this n (O(n^2): ~48s already at n=16'000).",
     )
     parser.add_argument("--n-repeat-pastas", type=int, default=6)
-    parser.add_argument("--n-repeat-fast", type=int, default=3)
+    parser.add_argument("--n-repeat-fast", type=int, default=6)
     parser.add_argument("--order-seed", type=int, default=None)
     args = parser.parse_args()
 
