@@ -1,0 +1,41 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+
+# Allow only one concurrent deployment
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed for gh-pages push
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history (mkdocstrings needs it for git-dates plugin if added later)
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MkDocs + dependencies
+        run: |
+          pip install \
+            mkdocs \
+            mkdocs-material \
+            mkdocstrings \
+            mkdocstrings-python \
+            mkdocs-autorefs
+
+      - name: Install package (needed for mkdocstrings to import and parse docstrings)
+        run: pip install -e .
+
+      - name: Build and deploy to GitHub Pages
+        run: mkdocs gh-deploy --force
