@@ -12,10 +12,10 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"  # same as venv local (3.11)
 
       - name: Install black
-        run: pip install black==24.2.0
+        run: pip install black==26.5.1  # same as venv local (26.5.1)
 
       - name: Check formatting with Black
-        run: black --check --diff .
+        run: black --check --diff --target-version=py311 . 
