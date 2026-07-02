@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+Site/
 
 # --- Numba on-disk JIT cache (created next to the cached functions) ---
 *.nbi

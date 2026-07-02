@@ -11,7 +11,7 @@
 [![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
 
 Fast autocorrelation function (ACF) estimation for **irregularly- and regularly-sampled** 1D
-time series, scaling as $\sim O(n\ log\ n)$.
+time series, scaling as $\sim~O(n\log n)$.
 
 ## Three estimator families
 
@@ -23,6 +23,13 @@ time series, scaling as $\sim O(n\ log\ n)$.
 
 All functions share the same calling convention: `fn(lags, t, x, bin_width=0.5)`, returning
 `(c, b)` — the ACF estimate and effective pair count.
+
+## Documentation
+
+- [Installation](installation.md)
+- [Usage](usage.md)
+- [API Reference](api.md)
+- [License](license.md)
 
 ## Quick start
 
@@ -49,10 +56,10 @@ Built on two ingredients:
 
 1. **[FINUFFT](https://github.com/flatironinstitute/finufft)** (Flatiron Institute)
    evaluates the power spectrum of the irregularly-sampled signal via a type-1 NUFFT,
-   then inverts it at the requested lags (Wiener-Khinchin theorem) — giving ~O(n log n)
-   scaling instead of the O(n²) real-space sum.
+   then inverts it at the requested lags (Wiener-Khinchin theorem) — giving $\sim~O(n\log n)$
+   scaling instead of the $O(n^2)$ real-space sum.
 2. An analytical **"b" correction** for the effective pair count per lag, specific to
-   the Gaussian and rectangular kernels, computed in O(n) via a two-pointer scan
+   the Gaussian and rectangular kernels, computed in $O(n)$ via a two-pointer scan
    (`kernels.py`) — without this, the raw NUFFT spectrum would not be correctly normalised.
 
 On a **regular** grid, `fft_acf.py` uses plain `scipy.signal.correlate` and recovers
@@ -83,3 +90,4 @@ If you use `nufftacf`, please also cite FINUFFT:
 > [github.com/flatironinstitute/finufft](https://github.com/flatironinstitute/finufft)
 
 > J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf
+
