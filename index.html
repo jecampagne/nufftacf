@@ -440,6 +440,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -648,6 +659,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -732,7 +754,7 @@
 <a href="https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml"><img alt="macOS" src="https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple" /></a>
 <a href="https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml"><img alt="Windows" src="https://img.shields.io/badge/windows-latest-orange?logo=windows" /></a></p>
 <p>Fast autocorrelation function (ACF) estimation for <strong>irregularly- and regularly-sampled</strong> 1D
-time series, scaling as $\sim O(n\ log\ n)$.</p>
+time series, scaling as <span class="arithmatex">\(\sim~O(n\log n)\)</span>.</p>
 <h2 id="three-estimator-families">Three estimator families<a class="headerlink" href="#three-estimator-families" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -748,24 +770,31 @@ time series, scaling as $\sim O(n\ log\ n)$.</p>
 <td style="text-align: left;"><code>compute_acf_gaussian_nufft</code> / <code>_rectangle_nufft</code></td>
 <td style="text-align: center;">irregular</td>
 <td style="text-align: center;">NUFFT + Wiener-Khinchin</td>
-<td style="text-align: center;">$\sim~O(n\log n)$</td>
+<td style="text-align: center;"><span class="arithmatex">\(\sim~O(n\log n)\)</span></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>compute_acf_gaussian_realspace</code> / <code>_rectangle_realspace</code></td>
 <td style="text-align: center;">irregular or regular</td>
 <td style="text-align: center;">direct weighted sum</td>
-<td style="text-align: center;">$O(n)$ per lag</td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n)\)</span> per lag</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>compute_acf_gaussian_fft</code> / <code>_rectangle_fft</code> / <code>_regular_fft</code></td>
 <td style="text-align: center;"><strong>regular only</strong></td>
 <td style="text-align: center;">classic FFT + filter</td>
-<td style="text-align: center;">$\sim~O(n\log n)$</td>
+<td style="text-align: center;"><span class="arithmatex">\(\sim~O(n\log n)\)</span></td>
 </tr>
 </tbody>
 </table>
 <p>All functions share the same calling convention: <code>fn(lags, t, x, bin_width=0.5)</code>, returning
 <code>(c, b)</code> — the ACF estimate and effective pair count.</p>
+<h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="installation/">Installation</a></li>
+<li><a href="usage/">Usage</a></li>
+<li><a href="api/">API Reference</a></li>
+<li><a href="license/">License</a></li>
+</ul>
 <h2 id="quick-start">Quick start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">,</span> <span class="n">t_numeric_of</span>
@@ -785,10 +814,10 @@ time series, scaling as $\sim O(n\ log\ n)$.</p>
 <ol>
 <li><strong><a href="https://github.com/flatironinstitute/finufft">FINUFFT</a></strong> (Flatiron Institute)
    evaluates the power spectrum of the irregularly-sampled signal via a type-1 NUFFT,
-   then inverts it at the requested lags (Wiener-Khinchin theorem) — giving ~O(n log n)
-   scaling instead of the O(n²) real-space sum.</li>
+   then inverts it at the requested lags (Wiener-Khinchin theorem) — giving <span class="arithmatex">\(\sim~O(n\log n)\)</span>
+   scaling instead of the <span class="arithmatex">\(O(n^2)\)</span> real-space sum.</li>
 <li>An analytical <strong>"b" correction</strong> for the effective pair count per lag, specific to
-   the Gaussian and rectangular kernels, computed in O(n) via a two-pointer scan
+   the Gaussian and rectangular kernels, computed in <span class="arithmatex">\(O(n)\)</span> via a two-pointer scan
    (<code>kernels.py</code>) — without this, the raw NUFFT spectrum would not be correctly normalised.</li>
 </ol>
 <p>On a <strong>regular</strong> grid, <code>fft_acf.py</code> uses plain <code>scipy.signal.correlate</code> and recovers
@@ -874,6 +903,10 @@ See <a href="usage/">Usage</a> for the commands.</p>
     
     
       <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="javascripts/mathjax.js"></script>
       
     
   </body>

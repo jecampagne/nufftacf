@@ -714,14 +714,14 @@
 </thead>
 <tbody>
 <tr>
-<td>Irregularly sampled, long ($\gtrsim~10,000$ pts)</td>
+<td>Irregularly sampled, long (<span class="arithmatex">\(\gtrsim~10,000\)</span> pts)</td>
 <td><code>compute_acf_gaussian_nufft</code> / <code>compute_acf_rectangle_nufft</code></td>
-<td style="text-align: center;">$O(n\log n)$ fastest</td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n\log n)\)</span> fastest</td>
 </tr>
 <tr>
 <td>Irregularly sampled, any length</td>
 <td><code>compute_acf_gaussian_realspace</code> / <code>compute_acf_rectangle_realspace</code></td>
-<td style="text-align: center;">$O(n)$ per lag, artifact-free</td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n)\)</span> per lag, artifact-free</td>
 </tr>
 <tr>
 <td><strong>Regularly sampled</strong>, any method</td>
@@ -859,6 +859,10 @@ to run them on Colab.</p>
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+        <script src="../javascripts/mathjax.js"></script>
       
     
   </body>
