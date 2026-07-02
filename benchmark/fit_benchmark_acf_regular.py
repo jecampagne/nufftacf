@@ -127,12 +127,10 @@ def analyze_group(df, kernel, algo, n_boot, seed):
 
     repeats_by_n = {n: g["time_s"].to_numpy() for n, g in sub.groupby("n_points")}
     n_values = np.array(sorted(repeats_by_n.keys()), dtype=float)
-    #t_min = np.array([repeats_by_n[n].min() for n in n_values])
     t_min = np.array([np.median(repeats_by_n[n]) for n in n_values])
 
     model_func, model_label = get_model(kernel, algo)
     p0 = [1e-7, 0.01] if algo == "pastas" else [1e-7, 0.001]
-
 
     params = robust_fit(n_values, t_min, model_func, p0)
     a, ovh = params
