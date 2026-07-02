@@ -1,16 +1,14 @@
-# acf-nufft
+# nufftacf
 
 [![Tests](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
 [![Lint](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Distributed under the PyPI/pip name **`acf-nufft`** (import name `acf_nufft`),
-> hosted in the GitHub repository **`nufftacf`**.
 
 Fast autocorrelation function (ACF) estimation for **irregularly- and
 regularly-sampled** time series, scaling as $O(n \log n)$ thanks noytably to the Nonuniform Fast Fourier Transform library developped by the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
 
-With **`acf-nufft`** three estimator families are provided:
+With **`nufftacf`** three estimator families are provided:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
@@ -38,7 +36,7 @@ pip install -e .
 pip install -e ".[benchmark]"
 
 # directement depuis GitHub, sans clone local
-pip install "acf-nufft @ git+https://github.com/jecampagne/nufftacf.git"
+pip install "nufftacf @ git+https://github.com/jecampagne/nufftacf.git"
 ```
 
 Requires Python >= 3.11. Core dependencies: numpy, pandas, numba, scipy, finufft.
@@ -48,7 +46,7 @@ Requires Python >= 3.11. Core dependencies: numpy, pandas, numba, scipy, finufft
 ```python
 import numpy as np
 import pandas as pd
-from acf_nufft import compute_acf_gaussian_nufft, t_numeric_of
+from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
 
 # An irregularly-sampled series (any DatetimeIndex works)
 idx = pd.date_range("2000-01-01", periods=5000, freq="D")[np.random.rand(5000) > 0.2]
@@ -168,14 +166,14 @@ prototype's own external renormalization step happened to mask:
   for all 3 of Pastas' bin methods (`regular`/`rectangle`/`gaussian`), plus
   a small in-notebook benchmark illustration.
 
-Both are Colab-ready: the first cell installs `acf-nufft` (with the
+Both are Colab-ready: the first cell installs `nufftacf` (with the
 `benchmark` extra, i.e. Pastas + matplotlib) straight from this GitHub
 repo, so neither notebook contains any copy-pasted implementation -- just
 the comparison/plotting logic.
 
 ## Method
 
-`acf-nufft` is built on two ingredients:
+`nufftacf` is built on two ingredients:
 
 1. **[FINUFFT](https://github.com/flatironinstitute/finufft)** (Flatiron
    Institute) to evaluate the power spectrum of the irregularly-sampled
@@ -238,7 +236,7 @@ article numbers) are example results included as a reference.
 ## Citing
 
 
-If you use `acf-nufft`, please also cite FINUFFT, which it depends on:
+If you use `nufftacf`, please also cite FINUFFT, which it depends on:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an
@@ -317,7 +315,7 @@ pip install -e ".[test]"
 pytest tests/
 ```
 
-`tests/test_acf_nufft.py` (NUFFT vs realspace, irregular data) and
+`tests/test_nufftacf.py` (NUFFT vs realspace, irregular data) and
 `tests/test_fft_acf.py` (fft vs realspace, and fft "regular" vs Pastas
 itself, regular data) are correctness/sanity checks, not performance
 benchmarks.

@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from acf_nufft import (
+from nufftacf import (
     compute_acf_gaussian_nufft,
     compute_acf_rectangle_nufft,
     compute_acf_gaussian_realspace,

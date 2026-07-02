@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "acf-nufft"
+name = "nufftacf"
 version = "0.1.0"
 description = "Fast autocorrelation function (ACF) estimation for irregularly-sampled time series, via NUFFT + Numba-optimized real-space kernels (gaussian and rectangle)."
 readme = "README.md"

@@ -1,5 +1,5 @@
 """
-Benchmark (data collection only): time Pastas vs acf_nufft on REGULARLY
+Benchmark (data collection only): time Pastas vs nufftacf on REGULARLY
 -sampled series of variable length, for three bin methods: "regular" (no
 smoothing kernel), "rectangle", and "gaussian".
 
@@ -32,7 +32,7 @@ import numpy as np
 import pandas as pd
 import pastas as ps
 
-from acf_nufft import (
+from nufftacf import (
     compute_acf_regular_fft,
     compute_acf_rectangle_fft,
     compute_acf_gaussian_fft,
@@ -191,7 +191,7 @@ def run_benchmark(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Collect ACF benchmark timing data on REGULAR data (Pastas vs acf_nufft)."
+        description="Collect ACF benchmark timing data on REGULAR data (Pastas vs nufftacf)."
     )
     parser.add_argument("--output", default="benchmark_acf_regular_results.csv")
     parser.add_argument(

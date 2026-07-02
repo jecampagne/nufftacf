@@ -26,7 +26,7 @@ c, b = fn(lags, t, x, bin_width=0.5)      # gaussian / rectangle variants
 ```python
 import numpy as np
 import pandas as pd
-from acf_nufft import compute_acf_gaussian_nufft, t_numeric_of
+from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
 
 # A pandas Series with a DatetimeIndex works directly
 idx = pd.date_range("2005-01-01", periods=3650, freq="D")
@@ -44,7 +44,7 @@ c, b = compute_acf_gaussian_nufft(lags, t, x, bin_width=0.5)
 ## Regularly-sampled series (classic FFT path)
 
 ```python
-from acf_nufft import compute_acf_gaussian_fft, compute_acf_regular_fft
+from nufftacf import compute_acf_gaussian_fft, compute_acf_regular_fft
 
 n = 3650
 t = np.arange(n, dtype=float)         # integer day indices

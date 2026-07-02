@@ -5,11 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jecampagne/nufftacf/blob/main/LICENSE)
 
 Fast autocorrelation function (ACF) estimation for **irregularly- and regularly-sampled** 1D
-time series, scaling far better than the O(n²) real-space approach used by
-[Pastas](https://github.com/pastas/pastas) for long series.
-
-> Distributed under the PyPI/pip name **`acf-nufft`** (import name `acf_nufft`),
-> hosted in the GitHub repository **`nufftacf`**.
+time series, scaling as O(n log n).
 
 ## Three estimator families
 
@@ -26,7 +22,7 @@ All functions share the same calling convention: `fn(lags, t, x, bin_width=0.5)`
 
 ```python
 import numpy as np
-from acf_nufft import compute_acf_gaussian_nufft, t_numeric_of
+from nufftacf import compute_acf_gaussian_nufft, t_numeric_of
 import pandas as pd
 
 sts = pd.Series(...)  # irregularly-sampled pandas Series with DatetimeIndex
@@ -36,7 +32,7 @@ c, b = compute_acf_gaussian_nufft(lags, t_numeric_of(sts), sts.to_numpy(), bin_w
 
 ```python
 # Regularly-sampled series: use the faster classic-FFT path
-from acf_nufft import compute_acf_gaussian_fft
+from nufftacf import compute_acf_gaussian_fft
 t = np.arange(len(x), dtype=float)
 c, b = compute_acf_gaussian_fft(lags, t, x, bin_width=0.5)
 ```
