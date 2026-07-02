@@ -5,16 +5,12 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 > Distributed under the PyPI/pip name **`acf-nufft`** (import name `acf_nufft`),
-> hosted in the GitHub repository **`nufftacf`** — same project, the names
-> just differ slightly between the two.
+> hosted in the GitHub repository **`nufftacf`**.
 
 Fast autocorrelation function (ACF) estimation for **irregularly- and
-regularly-sampled** time series, scaling far better than the O(n^2)
-real-space approach used by [Pastas](https://github.com/pastas/pastas) for
-long series -- while remaining usable standalone, with no dependency on
-Pastas.
+regularly-sampled** time series, scaling as $O(n \log n)$ thanks noytably to the Nonuniform Fast Fourier Transform library developped by the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
 
-Three estimator families are provided:
+With **`acf-nufft`** three estimator families are provided:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
