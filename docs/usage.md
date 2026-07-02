@@ -3,9 +3,9 @@
 ## Choosing the right estimator
 
 | Your data | Recommended function | Notes |
-|---|---|---|
-| Irregularly sampled, long (≥ 10 000 pts) | `compute_acf_gaussian_nufft` / `compute_acf_rectangle_nufft` | O(n log n), fastest |
-| Irregularly sampled, any length | `compute_acf_gaussian_realspace` / `compute_acf_rectangle_realspace` | O(n) per lag, artifact-free |
+|---|---|:---:|
+| Irregularly sampled, long ($\gtrsim~10,000$ pts) | `compute_acf_gaussian_nufft` / `compute_acf_rectangle_nufft` | $O(n\log n)$ fastest |
+| Irregularly sampled, any length | `compute_acf_gaussian_realspace` / `compute_acf_rectangle_realspace` | $O(n)$ per lag, artifact-free |
 | **Regularly sampled**, any method | `compute_acf_gaussian_fft` / `compute_acf_rectangle_fft` / `compute_acf_regular_fft` | 100–400× faster than NUFFT on regular grids |
 
 All functions share the same signature:
@@ -82,11 +82,11 @@ pip install -e ".[benchmark]"
 
 # Irregular data: Pastas vs _nufft
 python benchmark/benchmark_acf.py
-python benchmark/fit_benchmark_acf.py benchmark_acf_results.csv
+python benchmark/fit_benchmark_acf.py
 
 # Regular data: Pastas vs _fft vs _nufft, all three bin methods
 python benchmark/benchmark_acf_regular.py
-python benchmark/fit_benchmark_acf_regular.py --csv_path benchmark_acf_regular_results.csv
+python benchmark/fit_benchmark_acf_regular.py 
 ```
 
 Example results (Apple Silicon Mac) are stored in `benchmark/`.

@@ -38,9 +38,7 @@ pip install "nufftacf[benchmark] @ git+https://github.com/jecampagne/nufftacf.gi
 
 ## Troubleshooting (macOS)
 
-If you hit a segfault or hang when running tests or importing the package,
-see the **macOS troubleshooting** section in the [README](index.md).
-The short version: make sure you have a clean Python environment (no conda
+If you hit a segfault or hang when running tests or importing the package. The short version: make sure you have a clean Python environment (no conda
 stacked on top of your venv), install `finufft`/`numba`/`llvmlite` as
 prebuilt wheels (`--only-binary=:all:`), and clear any stale Numba
 on-disk JIT cache:

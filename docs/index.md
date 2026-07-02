@@ -4,16 +4,22 @@
 [![Lint](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml/badge.svg)](https://github.com/jecampagne/nufftacf/actions/workflows/lint.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/jecampagne/nufftacf/blob/main/LICENSE)
 
+[![Python](https://img.shields.io/badge/python-3.11%20|%203.12%20|%203.13%20|%203.14-blue)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![Linux](https://img.shields.io/badge/linux-ubuntu--latest-orange?logo=linux)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+[![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
+
 Fast autocorrelation function (ACF) estimation for **irregularly- and regularly-sampled** 1D
-time series, scaling as O(n log n).
+time series, scaling as $\sim O(n\ log\ n)$.
 
 ## Three estimator families
 
-| Function(s) | Sampling | Method | Scaling |
-|---|---|---|---|
-| `compute_acf_gaussian_nufft` / `_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | ~O(n log n) |
-| `compute_acf_gaussian_realspace` / `_rectangle_realspace` | irregular or regular | direct weighted sum | O(n) per lag |
-| `compute_acf_gaussian_fft` / `_rectangle_fft` / `_regular_fft` | **regular only** | classic FFT + filter | ~O(n log n) |
+  Function(s) | Sampling | Method | Scaling |
+ |:-----------|:---------:|:-------:|:-------:|
+ | `compute_acf_gaussian_nufft` / `_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ |
+ | `compute_acf_gaussian_realspace` / `_rectangle_realspace` | irregular or regular | direct weighted sum | $O(n)$ per lag |
+ | `compute_acf_gaussian_fft` / `_rectangle_fft` / `_regular_fft` | **regular only** | classic FFT + filter | $\sim~O(n\log n)$ |
 
 All functions share the same calling convention: `fn(lags, t, x, bin_width=0.5)`, returning
 `(c, b)` — the ACF estimate and effective pair count.
@@ -73,7 +79,7 @@ If you use `nufftacf`, please also cite FINUFFT:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an
-> "exponential of semicircle" kernel.* SIAM J. Sci. Comput.
+> "exponential of semicircle" kernel.* SIAM J. Sci. Comput.  41(5), C479-C504. 
 > [github.com/flatironinstitute/finufft](https://github.com/flatironinstitute/finufft)
 
 > J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf
