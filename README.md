@@ -33,6 +33,10 @@ All seven share the same calling convention: `fn(lags, t, x, bin_width=0.5)`
 smoothing kernel), and return `(c, b)` -- the ACF estimate and the
 effective pair count, both shape `(len(lags),)`.
 
+## Documentation
+
+https://jecampagne.github.io/nufftacf/
+
 ## Installation
 
 ```bash
@@ -168,7 +172,7 @@ the comparison/plotting logic.
    Institute) to evaluate the power spectrum of the irregularly-sampled
    signal via a type-1 non-uniform FFT, then invert it at the requested lags
    via a type-2 NUFFT (Wiener-Khinchin theorem) -- this is what gives the
-   `_nufft` estimators their $\approx O(n\ log\ n)$ scaling, instead of the $O(n^2)/O(n)$
+   `_nufft` estimators their $\sim~O(n\ log\ n)$ scaling, instead of the $O(n^2)/O(n)$
    per-lag direct sum.
 2. An analytical, kernel-specific correction for the number of
    contributing sample pairs per lag (the `b` denominator in `kernels.py`),
