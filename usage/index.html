@@ -709,24 +709,24 @@
 <tr>
 <th>Your data</th>
 <th>Recommended function</th>
-<th>Notes</th>
+<th style="text-align: center;">Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Irregularly sampled, long (≥ 10 000 pts)</td>
+<td>Irregularly sampled, long ($\gtrsim~10,000$ pts)</td>
 <td><code>compute_acf_gaussian_nufft</code> / <code>compute_acf_rectangle_nufft</code></td>
-<td>O(n log n), fastest</td>
+<td style="text-align: center;">$O(n\log n)$ fastest</td>
 </tr>
 <tr>
 <td>Irregularly sampled, any length</td>
 <td><code>compute_acf_gaussian_realspace</code> / <code>compute_acf_rectangle_realspace</code></td>
-<td>O(n) per lag, artifact-free</td>
+<td style="text-align: center;">$O(n)$ per lag, artifact-free</td>
 </tr>
 <tr>
 <td><strong>Regularly sampled</strong>, any method</td>
 <td><code>compute_acf_gaussian_fft</code> / <code>compute_acf_rectangle_fft</code> / <code>compute_acf_regular_fft</code></td>
-<td>100–400× faster than NUFFT on regular grids</td>
+<td style="text-align: center;">100–400× faster than NUFFT on regular grids</td>
 </tr>
 </tbody>
 </table>
@@ -793,11 +793,11 @@ to run them on Colab.</p>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Irregular data: Pastas vs _nufft</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>python<span class="w"> </span>benchmark/benchmark_acf.py
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf.py<span class="w"> </span>benchmark_acf_results.csv
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf.py
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Regular data: Pastas vs _fft vs _nufft, all three bin methods</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>python<span class="w"> </span>benchmark/benchmark_acf_regular.py
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf_regular.py<span class="w"> </span>--csv_path<span class="w"> </span>benchmark_acf_regular_results.csv
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf_regular.py<span class="w"> </span>
 </code></pre></div>
 <p>Example results (Apple Silicon Mac) are stored in <code>benchmark/</code>.</p>
 
