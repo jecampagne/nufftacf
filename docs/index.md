@@ -69,7 +69,7 @@ See [Usage](usage.md) for the commands.
 
 ## Citing
 
-If you use `acf-nufft`, please also cite FINUFFT:
+If you use `nufftacf`, please also cite FINUFFT:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an

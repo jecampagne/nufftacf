@@ -27,9 +27,9 @@ pip install -e ".[benchmark,test]"
 ## Install directly from GitHub
 
 ```bash
-pip install "acf-nufft @ git+https://github.com/jecampagne/nufftacf.git"
+pip install "nufftacf @ git+https://github.com/jecampagne/nufftacf.git"
 # with benchmark extras:
-pip install "acf-nufft[benchmark] @ git+https://github.com/jecampagne/nufftacf.git"
+pip install "nufftacf[benchmark] @ git+https://github.com/jecampagne/nufftacf.git"
 ```
 
 !!! note

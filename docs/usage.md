@@ -72,7 +72,7 @@ Two Colab-ready notebooks are included in `notebook/`:
   **regularly-sampled** series (sine, noisy sine, exponential, constant, square wave),
   classic-FFT path vs Pastas for all three bin methods.
 
-Both install `acf-nufft` directly from GitHub in their first cell — no local setup needed
+Both install `nufftacf` directly from GitHub in their first cell — no local setup needed
 to run them on Colab.
 
 ## Benchmark scripts
