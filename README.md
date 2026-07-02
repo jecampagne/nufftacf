@@ -14,19 +14,19 @@
 
 
 Fast autocorrelation function (ACF) estimation for **irregularly- and
-regularly-sampled** time series, scaling as $O(n \log n)$ thanks noytably to the Nonuniform Fast Fourier Transform library developped by the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
+regularly-sampled** time series, scaling as $O(n\log n)$ thanks noytably to the Nonuniform Fast Fourier Transform library developped by the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
 
 With **`nufftacf`** three estimator families are provided:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
-| `compute_acf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | ~O(n log n) | fastest for long irregular series; ~1-3% residual amplitude bias on strongly periodic signals (see below) |
-| `compute_acf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | ~O(n log n) | same caveat as above |
-| `compute_acf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | O(n) per lag | artifact-free reference |
-| `compute_acf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | O(n) per lag | artifact-free reference |
-| `compute_acf_regular_fft` | **regular only** | classic FFT correlation, no kernel | ~O(n) | matches Pastas `bin_method="regular"` to numerical precision |
-| `compute_acf_rectangle_fft` | **regular only** | classic FFT correlation + box filter | ~O(n log n) | faster than `_nufft`/`_realspace` on regular data (no NUFFT/numba overhead) |
-| `compute_acf_gaussian_fft` | **regular only** | classic FFT correlation + gaussian filter | ~O(n log n) | same |
+| `compute_acf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ | fastest for long irregular series; ~1-3% residual amplitude bias on strongly periodic signals (see below) |
+| `compute_acf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ | same caveat as above |
+| `compute_acf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+| `compute_acf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+| `compute_acf_regular_fft` | **regular only** | classic FFT correlation, no kernel | $\sim~O(n)$ | matches Pastas `bin_method="regular"` to numerical precision |
+| `compute_acf_rectangle_fft` | **regular only** | classic FFT correlation + box filter | $\sim~O(n\log n)$ | faster than `_nufft`/`_realspace` on regular data (no NUFFT/numba overhead) |
+| `compute_acf_gaussian_fft` | **regular only** | classic FFT correlation + gaussian filter |$\sim~O(n\log n)$ | same |
 
 All seven share the same calling convention: `fn(lags, t, x, bin_width=0.5)`
 (`compute_acf_regular_fft` has no `bin_width`, since it applies no
@@ -228,7 +228,7 @@ If you use `nufftacf`, please also cite FINUFFT, which it depends on:
 
 > A. H. Barnett, J. F. Magland, and L. af Klinteberg (2019).
 > *A parallel non-uniform fast Fourier transform library based on an
-> "exponential of semicircle" kernel.* SIAM J. Sci. Comput.
+> "exponential of semicircle" kernel.* SIAM J. Sci. Comput.  41(5), C479-C504.
 > https://github.com/flatironinstitute/finufft
 
 > J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf

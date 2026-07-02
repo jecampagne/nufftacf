@@ -75,3 +75,5 @@ If you use `nufftacf`, please also cite FINUFFT:
 > *A parallel non-uniform fast Fourier transform library based on an
 > "exponential of semicircle" kernel.* SIAM J. Sci. Comput.
 > [github.com/flatironinstitute/finufft](https://github.com/flatironinstitute/finufft)
+
+> J.E Campagne (2026): *"Non Uniform FFT based Auto Correlation functions"*.  https://github.com/jecampagne/nufftacf
