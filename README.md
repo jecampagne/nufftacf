@@ -179,6 +179,7 @@ derivation, and `notebook/` / `benchmark/` for empirical validation.
   varying length, all 3 bin methods -- this is what lets you see, on
   regular data, how much the dedicated `_fft` path buys over just reusing
   the more general `_nufft` estimator.
+- no real benchmarks are provided to compare **nuffacf** against **pyzdcf**, although in the plots obtained in `zdcf_vs_nufftacf.ipynb` one can appreciate that **nufftacf** is ~2 order of magnitude faster. 
 
 ```bash
 pip install -e ".[benchmark]"
