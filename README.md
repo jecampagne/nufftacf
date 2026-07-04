@@ -53,6 +53,13 @@ pip install "nufftacf @ git+https://github.com/jecampagne/nufftacf.git"
 
 Requires Python >= 3.11. Core dependencies: numpy, pandas, numba, scipy, finufft.
 
+Check installation using `pytest>=7.0`
+```bash
+cd nufftacf
+pytest tests/ -v
+```
+Let me know via the [repository issues](https://github.com/jecampagne/nufftacf/issues) if you encounter any troubles.
+
 ## Quick start
 
 ```python
@@ -201,7 +208,7 @@ assumed) at the top of each script as needed. Each measurement uses several
 repeats and keeps the minimum, to reduce noise from shared/cloud
 environments (Colab, background browser activity, etc.).
 
-`benchmark/*_macosx.{csv,png}` give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the `Discussions` section  of the repository.
+`benchmark/*_macosx.{csv,png}` give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the [Discussions](https://github.com/jecampagne/nufftacf/discussions) of the repository.
 
 ## Citing
 
