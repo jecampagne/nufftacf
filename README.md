@@ -40,14 +40,14 @@ https://jecampagne.github.io/nufftacf/
 ## Installation
 
 ```bash
-# depuis un clone local
+# from a local clone
 git clone https://github.com/jecampagne/nufftacf.git
 cd nufftacf
 pip install -e .
-# ou, avec les dépendances optionnelles de benchmark (Pastas + matplotlib) :
+# or with the optional benchmark (Pastas + matplotlib) :
 pip install -e ".[benchmark]"
 
-# directement depuis GitHub, sans clone local
+# from GitHub without any local clone
 pip install "nufftacf @ git+https://github.com/jecampagne/nufftacf.git"
 ```
 
@@ -89,7 +89,7 @@ c, b = compute_acf_gaussian_nufft(lags, t, x.to_numpy(), bin_width=0.5)
 - **Strongly periodic, irregularly-sampled signals** (e.g. seasonal/annual
   cycles) where you need the most accurate possible ACF and series length is
   manageable: use the `_realspace` variants, or the `_nufft` variants with an
-  increased `N1` (e.g. `N1=32*len(x)`), which reduces but does not fully
+  increased `N1` (e.g. `N1>32*len(x)`), which reduces but does not fully
   eliminate the residual bias (see below).
 - **Everything else, irregular case**: either `_nufft` or `_realspace` works;
   `_nufft` will generally be faster.
@@ -129,40 +129,18 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   `tests/test_fft_acf.py::test_rectangle_fft_matches_realspace_various_bin_widths`
   for the exact numbers across `bin_width` values.
 
-These three functions started from a separate prototype notebook
-(`acf_uniform_pasta_vs_fft.ipynb`) with its own `compute_ccf_*_fft_regular`
-functions; merging them surfaced (and fixed) two real bugs that the
-prototype's own external renormalization step happened to mask:
-1. The gaussian kernel's `b` denominator used a closed-form approximation
-   that was off by a constant ~2400x factor on the validation series tried
-   here (still lag-shape-correct, which is why the external `c / c[0]`
-   renormalization in the prototype's own test cell hid it completely).
-   Fixed by computing `b` via the *same* `gaussian_filter1d` smoothing
-   applied to the raw correlation numerator, instead of a separate formula
-   -- this also makes any kernel-discretization artifact cancel exactly
-   between numerator and denominator.
-2. The rectangle kernel's window-size formula had an off-by-one
-   (`int(2*bin_width/dt) + 1` instead of `int(round(2*bin_width/dt))`), and
-   didn't force an odd window size -- an even-sized discrete box filter is
-   asymmetric by half a sample, which silently introduced a systematic
-   ~0.3-0.5% bias at *every* lag (not just at the boundary) for `bin_width`
-   values that happened to round to an even window. Fixed by forcing an odd
-   window size (`2*round(bin_width/dt) + 1`) by construction.
-
 ## Notebooks
 
-- [`notebook/pastas_vs_nufftact.ipynb`](notebook/pastas_vs_nufftact.ipynb)
-  compares this package against Pastas on **irregularly**-sampled series
+- [`pastas_vs_nufftact.ipynb`](notebook/pastas_vs_nufftact.ipynb)
+  compares **nufftacf** against **Pastas** on **irregularly**-sampled series
   (sine and AR(1)-like, with random gaps), using the `_nufft` estimators.
-- [`notebook/pastas_vs_nufftacf_regular.ipynb`](notebook/pastas_vs_nufftacf_regular.ipynb)
+- [`pastas_vs_nufftacf_regular.ipynb`](notebook/pastas_vs_nufftacf_regular.ipynb)
   does the same on **regularly**-sampled series (sine, noisy sine,
   noisy exponential decay, square wave), using the `_fft` estimators,
   for all 3 of Pastas' bin methods (`regular`/`rectangle`/`gaussian`).
+- [`zdcf_vs_nufftacf.ipynb`](`notebook/zdcf_vs_nufftacf.ipynb) compares **nufftacf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftact.ipynb`.
 
-Both are Colab-ready: the first cell installs `nufftacf` (with the
-`benchmark` extra, i.e. Pastas + matplotlib) straight from this GitHub
-repo, so neither notebook contains any copy-pasted implementation -- just
-the comparison/plotting logic.
+All are Colab-ready: the first cell installs **nufftacf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
 
 ## Method
 
@@ -193,7 +171,7 @@ derivation, and `notebook/` / `benchmark/` for empirical validation.
 
 ## Benchmark
 
-- `benchmark/benchmark_acf.py` (+ `fit_benchmark_acf.py`): Pastas vs
+- `benchmark/benchmark_acf.py` (+ `fit_benchmark_acf.py`): **Pastas** vs
   `_nufft`, on **irregularly**-sampled series of varying length, both
   kernels.
 - `benchmark/benchmark_acf_regular.py` (+ `fit_benchmark_acf_regular.py`):
@@ -204,15 +182,17 @@ derivation, and `notebook/` / `benchmark/` for empirical validation.
 
 ```bash
 pip install -e ".[benchmark]"
-python benchmark/benchmark_acf.py            # -> benchmark_acf_results.csv
-python benchmark/fit_benchmark_acf.py benchmark_acf_results.csv
+python benchmark/benchmark_acf.py            
+# -> benchmark_acf_results.csv
+python benchmark/fit_benchmark_acf.py
 
-python benchmark/benchmark_acf_regular.py    # -> benchmark_acf_regular_results.csv
-python benchmark/fit_benchmark_acf_regular.py --csv_path benchmark_acf_regular_results.csv
+python benchmark/benchmark_acf_regular.py    
+# -> benchmark_acf_regular_results.csv
+python benchmark/fit_benchmark_acf_regular.py
 ```
 
-Adjust `durations_years` / `n_points_list` and the Pastas cutoffs
-(`pastas_max_years`, `pastas_max_n_regular`, `pastas_max_n_kernel` -- Pastas'
+Adjust `durations_years` / `n_points_list` and the **Pastas** cutoffs
+(`pastas_max_years`, `pastas_max_n_regular`, `pastas_max_n_kernel` -- **Pastas**'
 "gaussian"/"rectangle" bin methods are $O(n^2)$ on regular data too, just like
 on irregular data, while "regular" is empirically $\sim O(n)$ and stays usable
 much longer; both were measured directly before picking these defaults, not
@@ -220,13 +200,9 @@ assumed) at the top of each script as needed. Each measurement uses several
 repeats and keeps the minimum, to reduce noise from shared/cloud
 environments (Colab, background browser activity, etc.).
 
-`benchmark/*_macosx.{csv,png}` (irregular case) and
-`benchmark/*_linuxsandbox.{csv,png}` (regular case, collected in the sandbox
-this package was built in -- re-run on your own machine for the final
-article numbers) are example results included as a reference.
+`benchmark/*_macosx.{csv,png}` give the results on MacBook Pro (2020) 2 GHz Intel Core i5 quatre cœurs (osx Tahoe 26.5.1)-- re-run on your own machine for comaparison. You can share your results on the `Discussions` section  of the repository.
 
 ## Citing
-
 
 If you use `nufftacf`, please also cite FINUFFT, which it depends on:
 
