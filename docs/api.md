@@ -8,46 +8,67 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ---
 
-## NUFFT estimators (irregular and regular data)
+## NUFFT estimators
 
-::: nufftacf.nufft_acf.compute_acf_gaussian_nufft
+::: nufftacf.nufft_acf
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_acf_gaussian_nufft
+        - compute_acf_rectangle_nufft
 
-::: nufftacf.nufft_acf.compute_acf_rectangle_nufft
-
----
-
-## Real-space estimators (irregular and regular data)
-
-::: nufftacf.realspace_acf.compute_acf_gaussian_realspace
-
-::: nufftacf.realspace_acf.compute_acf_rectangle_realspace
-
----
 
 ## Classic-FFT estimators (regular data only)
 
-::: nufftacf.fft_acf.compute_acf_regular_fft
+::: nufftacf.fft_acf
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_acf_regular_fft
+        - compute_acf_rectangle_fft
+        - compute_acf_gaussian_fft
 
-::: nufftacf.fft_acf.compute_acf_rectangle_fft
+## Real-space estimators
 
-::: nufftacf.fft_acf.compute_acf_gaussian_fft
-
+::: nufftacf.realspace_acf
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_acf_gaussian_realspace
+        - compute_acf_rectangle_realspace
 ---
 
 ## Kernel helpers
-
-::: nufftacf.kernels.compute_b_gaussian
-
-::: nufftacf.kernels.compute_b_rectangle
-
-::: nufftacf.kernels.compute_c_gaussian
-
-::: nufftacf.kernels.compute_c_rectangle
+::: nufftacf.kernels
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_b_gaussian
+        - compute_b_rectangle
+        - compute_c_gaussian
+        - compute_c_rectangle
 
 ---
 
 ## Utilities
-
-::: nufftacf.utils.t_numeric_of
-
-::: nufftacf.utils.standardize
+::: nufftacf.utils
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - t_numeric_of
+        - standardize

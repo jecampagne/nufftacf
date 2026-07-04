@@ -12,9 +12,9 @@ more than broadband ones. Empirically this is a ~1-3% relative bias in the
 ACF amplitude once N1 is large enough (see N1 note below); for an
 artifact-free reference, use the `realspace` module instead.
 
-`N1 = 16 * n` was empirically validated (against the exact real-space
+`N1 = 32 * n` was empirically validated (against the exact real-space
 estimator) to bring the NUFFT result into close agreement for both gaussian
-and rectangle kernels; pushing higher (e.g. 32*n) gives a marginal further
+and rectangle kernels; pushing higher  gives a marginal further
 improvement for gaussian on strongly periodic signals, at negligible extra
 cost.
 """
@@ -65,7 +65,7 @@ def compute_acf_gaussian_nufft(lags, t, x, bin_width=0.5, N1=None, eps=1e-9):
     bin_width : float
         Gaussian kernel standard deviation (same units as `t`).
     N1 : int, optional
-        NUFFT frequency-grid size. Defaults to 16*len(x) (see module docstring).
+        NUFFT frequency-grid size. Defaults to 32*len(x) in  _nufft_power_spectrum_at_lags
     eps : float
         NUFFT requested precision.
 
@@ -77,7 +77,7 @@ def compute_acf_gaussian_nufft(lags, t, x, bin_width=0.5, N1=None, eps=1e-9):
     t = np.asarray(t, dtype=float)
     x = np.asarray(x, dtype=float)
     lags = np.asarray(lags, dtype=float)
-    lags_eval = np.concatenate(([0.0], lags))  # Todo test if already or not lags[0]==0
+    lags_eval = np.concatenate(([0.0], lags))
 
     c_positive = _nufft_power_spectrum_at_lags(t, x, lags_eval, N1, eps)
     c_smoothed = gaussian_filter1d(c_positive, sigma=bin_width)

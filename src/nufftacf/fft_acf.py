@@ -155,8 +155,8 @@ def compute_acf_rectangle_fft(lags, t, x, bin_width=0.5):
     n = len(x)
 
     lag_idx = np.round(lags / dt).astype(int)
-    # Forcing an ODD kernel size (2*k+1) is deliberate, not a rounding
-    # nicety: scipy's uniform_filter1d centers an EVEN-sized window a half
+    # Forcing an ODD kernel size (2*k+1) is deliberate.
+    # scipy's uniform_filter1d centers an EVEN-sized window a half
     # -sample off from the true symmetric [-bin_width, +bin_width] interval
     # kernels.py's two-pointer scan evaluates exactly, which otherwise
     # introduces a small but systematic (~0.3-0.5%, not just at lag=0)
