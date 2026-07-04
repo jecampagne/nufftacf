@@ -115,11 +115,11 @@ def test_regular_fft_runs_on_each_demo_signal_without_crashing():
     f = 1.0 / (n / 10)
     signals = {
         "sinus": np.sin(2 * np.pi * f * t),
-        "sinus_bruit": np.sin(2 * np.pi * f * t)
+        "sinus_noisy": np.sin(2 * np.pi * f * t)
         + np.random.default_rng(0).standard_normal(n) * 0.1,
-        "exponentielle": np.exp(-t / (n / 5)),
+        "exponential": np.exp(-t / (n / 5)),
         "constant": np.ones(n),
-        "carre": np.sign(np.sin(2 * np.pi * f * t)),
+        "square": np.sign(np.sin(2 * np.pi * f * t)),
     }
     lags = np.arange(0.0, 100.0)
     for name, x in signals.items():
