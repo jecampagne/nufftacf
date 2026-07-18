@@ -49,6 +49,12 @@ from .realspace_acf import (
     compute_acf_gaussian_realspace,
     compute_acf_rectangle_realspace,
 )
+from .nufft_ccf import compute_ccf_gaussian_nufft, compute_ccf_rectangle_nufft
+from .realspace_ccf import (
+    compute_ccf_gaussian_realspace,
+    compute_ccf_rectangle_realspace,
+)
+
 from .fft_acf import (
     compute_acf_regular_fft,
     compute_acf_rectangle_fft,
@@ -66,10 +72,18 @@ __all__ = [
     "compute_acf_regular_fft",
     "compute_acf_rectangle_fft",
     "compute_acf_gaussian_fft",
+    "compute_ccf_gaussian_nufft",
+    "compute_ccf_rectangle_nufft",
+    "compute_ccf_gaussian_realspace",
+    "compute_ccf_rectangle_realspace",
     "compute_b_gaussian",
     "compute_b_rectangle",
     "compute_c_gaussian",
     "compute_c_rectangle",
+    "compute_b_gaussian_cross",
+    "compute_b_rectangle_cross",
+    "compute_c_gaussian_cross",
+    "compute_c_rectangle_cross",
     "t_numeric_of",
     "standardize",
 ]
