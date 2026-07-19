@@ -429,10 +429,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#three-estimator-families" class="md-nav__link">
+  <a href="#three-acf-estimator-families" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Three estimator families
+        Three ACF estimator families
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-correlation-ccf-estimators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation (CCF) estimators
       
     </span>
   </a>
@@ -648,10 +659,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#three-estimator-families" class="md-nav__link">
+  <a href="#three-acf-estimator-families" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Three estimator families
+        Three ACF estimator families
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cross-correlation-ccf-estimators" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation (CCF) estimators
       
     </span>
   </a>
@@ -753,9 +775,9 @@
 <a href="https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml"><img alt="macOS" src="https://img.shields.io/badge/macOS-latest%20(arm64)%20%7C%20intel-orange?logo=apple" /></a>
 <a href="https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml"><img alt="macOS" src="https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple" /></a>
 <a href="https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml"><img alt="Windows" src="https://img.shields.io/badge/windows-latest-orange?logo=windows" /></a></p>
-<p>Fast autocorrelation function (ACF) estimation for <strong>irregularly- and regularly-sampled</strong> 1D
-time series, scaling as <span class="arithmatex">\(\sim~O(n\log n)\)</span>.</p>
-<h2 id="three-estimator-families">Three estimator families<a class="headerlink" href="#three-estimator-families" title="Permanent link">&para;</a></h2>
+<p>Fast <strong>autocorrelation</strong> (ACF) and <strong>cross-correlation</strong> (CCF) function estimation for
+<strong>irregularly- and regularly-sampled</strong> 1D time series, scaling as <span class="arithmatex">\(\sim~O(n\log n)\)</span>.</p>
+<h2 id="three-acf-estimator-families">Three ACF estimator families<a class="headerlink" href="#three-acf-estimator-families" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -786,8 +808,44 @@ time series, scaling as <span class="arithmatex">\(\sim~O(n\log n)\)</span>.</p>
 </tr>
 </tbody>
 </table>
-<p>All functions share the same calling convention: <code>fn(lags, t, x, bin_width=0.5)</code>, returning
-<code>(c, b)</code> — the ACF estimate and effective pair count.</p>
+<p>All seven ACF functions share the same calling convention: <code>fn(lags, t, x, bin_width=0.5)</code>
+(<code>compute_acf_regular_fft</code> has no <code>bin_width</code>, since it applies no smoothing kernel),
+returning <code>(c, b)</code> — the ACF estimate and effective pair count.</p>
+<h2 id="cross-correlation-ccf-estimators">Cross-correlation (CCF) estimators<a class="headerlink" href="#cross-correlation-ccf-estimators" title="Permanent link">&para;</a></h2>
+<p>The same NUFFT + Wiener-Khinchin and real-space machinery is also available for the
+<strong>cross-correlation function</strong> between two <strong>irregularly-sampled</strong> series <code>(t, x)</code> and
+<code>(s, y)</code>, which may have different lengths and different sampling times:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Function</th>
+<th style="text-align: center;">Sampling</th>
+<th style="text-align: center;">Method</th>
+<th style="text-align: center;">Scaling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>compute_ccf_gaussian_nufft</code> / <code>_rectangle_nufft</code></td>
+<td style="text-align: center;">irregular</td>
+<td style="text-align: center;">NUFFT + Wiener-Khinchin</td>
+<td style="text-align: center;"><span class="arithmatex">\(\sim~O(n\log n)\)</span></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>compute_ccf_gaussian_realspace</code> / <code>_rectangle_realspace</code></td>
+<td style="text-align: center;">irregular or regular</td>
+<td style="text-align: center;">direct weighted sum</td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n)\)</span> per lag</td>
+</tr>
+</tbody>
+</table>
+<p>All four share the calling convention <code>fn(lags, t, x, s, y, bin_width=0.5)</code> and return
+<code>(c, b)</code> — the CCF estimate (Pearson-normalised, <code>c ~ 1</code> at perfect correlation) and the
+effective pair count. By convention, a positive lag means <code>y</code> lags behind <code>x</code> (the CCF
+peaks at <code>lag = tau0</code> when <code>y(t) ~ x(t - tau0)</code>).</p>
+<p><strong>Important:</strong> <code>t</code> and <code>s</code> must share a <em>common</em> time origin (e.g. elapsed days since the
+same reference date for both series) — using <code>t_numeric_of</code> independently on each series
+would silently misalign the lags. See <a href="usage/">Usage</a> for a worked example.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="installation/">Installation</a></li>
@@ -809,13 +867,24 @@ time series, scaling as <span class="arithmatex">\(\sim~O(n\log n)\)</span>.</p>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_fft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Cross-correlation between two irregularly-sampled series on a COMMON time</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># origin (t and s must be elapsed time since the same reference date)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_ccf_gaussian_nufft</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">181.0</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_ccf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># c: CCF estimate per lag (peaks at lag = tau0 when y(t) ~ x(t - tau0))</span>
+</code></pre></div>
+<p>See <a href="usage/">Usage</a> for a full worked CCF example built from two coupled
+Ornstein-Uhlenbeck-like series with a known lag <code>tau0</code>.</p>
 <h2 id="method">Method<a class="headerlink" href="#method" title="Permanent link">&para;</a></h2>
 <p>Built on two ingredients:</p>
 <ol>
 <li><strong><a href="https://github.com/flatironinstitute/finufft">FINUFFT</a></strong> (Flatiron Institute)
    evaluates the power spectrum of the irregularly-sampled signal via a type-1 NUFFT,
    then inverts it at the requested lags (Wiener-Khinchin theorem) — giving <span class="arithmatex">\(\sim~O(n\log n)\)</span>
-   scaling instead of the <span class="arithmatex">\(O(n^2)\)</span> real-space sum.</li>
+   scaling instead of the <span class="arithmatex">\(O(n^2)\)</span> real-space sum. The same machinery extends directly to
+   the CCF between two irregularly-sampled series with different sampling times.</li>
 <li>An analytical <strong>"b" correction</strong> for the effective pair count per lag, specific to
    the Gaussian and rectangular kernels, computed in <span class="arithmatex">\(O(n)\)</span> via a two-pointer scan
    (<code>kernels.py</code>) — without this, the raw NUFFT spectrum would not be correctly normalised.</li>
@@ -830,6 +899,11 @@ in the ratio.</p>
   <strong>irregularly-sampled</strong> series, NUFFT path vs Pastas (Colab-ready).</li>
 <li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftacf_regular.ipynb">pastas_vs_nufftacf_regular.ipynb</a> —
   <strong>regularly-sampled</strong> series, classic-FFT path vs Pastas (Colab-ready).</li>
+<li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/zdcf_vs_nufftacf.ipynb">zdcf_vs_nufftacf.ipynb</a> —
+  <strong>nufftacf</strong> vs <strong>pyZDCF</strong> on the same irregularly-sampled series as above.</li>
+<li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb">nufftacf_ccf_demo.ipynb</a> —
+  the <strong>cross-correlation (CCF)</strong> functions vs <strong>pyZDCF</strong>, including a case with two
+  coupled Ornstein-Uhlenbeck series for which the theoretical CCF is known analytically.</li>
 </ul>
 <h2 id="benchmark">Benchmark<a class="headerlink" href="#benchmark" title="Permanent link">&para;</a></h2>
 <p><code>benchmark/</code> contains timing results on an Apple Silicon Mac (irregular case)
