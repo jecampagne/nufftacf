@@ -45,7 +45,6 @@ from .kernels import (
     compute_c_rectangle,
 )
 from .nufft_acf import compute_acf_gaussian_nufft, compute_acf_rectangle_nufft
-from .nufft_acf import _nufft_power_spectrum_at_lags  
 from .realspace_acf import (
     compute_acf_gaussian_realspace,
     compute_acf_rectangle_realspace,
