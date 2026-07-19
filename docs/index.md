@@ -10,10 +10,10 @@
 [![macOS](https://img.shields.io/badge/macOS-arm64%20%7C%20x86__64-orange?logo=apple)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
 [![Windows](https://img.shields.io/badge/windows-latest-orange?logo=windows)](https://github.com/jecampagne/nufftacf/actions/workflows/tests.yml)
 
-Fast autocorrelation function (ACF) estimation for **irregularly- and regularly-sampled** 1D
-time series, scaling as $\sim~O(n\log n)$.
+Fast **autocorrelation** (ACF) and **cross-correlation** (CCF) function estimation for
+**irregularly- and regularly-sampled** 1D time series, scaling as $\sim~O(n\log n)$.
 
-## Three estimator families
+## Three ACF estimator families
 
   Function(s) | Sampling | Method | Scaling |
  |:-----------|:---------:|:-------:|:-------:|
@@ -21,8 +21,29 @@ time series, scaling as $\sim~O(n\log n)$.
  | `compute_acf_gaussian_realspace` / `_rectangle_realspace` | irregular or regular | direct weighted sum | $O(n)$ per lag |
  | `compute_acf_gaussian_fft` / `_rectangle_fft` / `_regular_fft` | **regular only** | classic FFT + filter | $\sim~O(n\log n)$ |
 
-All functions share the same calling convention: `fn(lags, t, x, bin_width=0.5)`, returning
-`(c, b)` — the ACF estimate and effective pair count.
+All seven ACF functions share the same calling convention: `fn(lags, t, x, bin_width=0.5)`
+(`compute_acf_regular_fft` has no `bin_width`, since it applies no smoothing kernel),
+returning `(c, b)` — the ACF estimate and effective pair count.
+
+## Cross-correlation (CCF) estimators
+
+The same NUFFT + Wiener-Khinchin and real-space machinery is also available for the
+**cross-correlation function** between two **irregularly-sampled** series `(t, x)` and
+`(s, y)`, which may have different lengths and different sampling times:
+
+  Function | Sampling | Method | Scaling |
+ |:--------|:---------:|:-------:|:-------:|
+ | `compute_ccf_gaussian_nufft` / `_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ |
+ | `compute_ccf_gaussian_realspace` / `_rectangle_realspace` | irregular or regular | direct weighted sum | $O(n)$ per lag |
+
+All four share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)` and return
+`(c, b)` — the CCF estimate (Pearson-normalised, `c ~ 1` at perfect correlation) and the
+effective pair count. By convention, a positive lag means `y` lags behind `x` (the CCF
+peaks at `lag = tau0` when `y(t) ~ x(t - tau0)`).
+
+**Important:** `t` and `s` must share a *common* time origin (e.g. elapsed days since the
+same reference date for both series) — using `t_numeric_of` independently on each series
+would silently misalign the lags. See [Usage](usage.md) for a worked example.
 
 ## Documentation
 
@@ -50,6 +71,19 @@ t = np.arange(len(x), dtype=float)
 c, b = compute_acf_gaussian_fft(lags, t, x, bin_width=0.5)
 ```
 
+```python
+# Cross-correlation between two irregularly-sampled series on a COMMON time
+# origin (t and s must be elapsed time since the same reference date)
+from nufftacf import compute_ccf_gaussian_nufft
+
+lags = np.arange(1.0, 181.0)
+c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
+# c: CCF estimate per lag (peaks at lag = tau0 when y(t) ~ x(t - tau0))
+```
+
+See [Usage](usage.md) for a full worked CCF example built from two coupled
+Ornstein-Uhlenbeck-like series with a known lag `tau0`.
+
 ## Method
 
 Built on two ingredients:
@@ -57,7 +91,8 @@ Built on two ingredients:
 1. **[FINUFFT](https://github.com/flatironinstitute/finufft)** (Flatiron Institute)
    evaluates the power spectrum of the irregularly-sampled signal via a type-1 NUFFT,
    then inverts it at the requested lags (Wiener-Khinchin theorem) — giving $\sim~O(n\log n)$
-   scaling instead of the $O(n^2)$ real-space sum.
+   scaling instead of the $O(n^2)$ real-space sum. The same machinery extends directly to
+   the CCF between two irregularly-sampled series with different sampling times.
 2. An analytical **"b" correction** for the effective pair count per lag, specific to
    the Gaussian and rectangular kernels, computed in $O(n)$ via a two-pointer scan
    (`kernels.py`) — without this, the raw NUFFT spectrum would not be correctly normalised.
@@ -73,6 +108,11 @@ in the ratio.
   **irregularly-sampled** series, NUFFT path vs Pastas (Colab-ready).
 - [pastas_vs_nufftacf_regular.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftacf_regular.ipynb) —
   **regularly-sampled** series, classic-FFT path vs Pastas (Colab-ready).
+- [zdcf_vs_nufftacf.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/zdcf_vs_nufftacf.ipynb) —
+  **nufftacf** vs **pyZDCF** on the same irregularly-sampled series as above.
+- [nufftacf_ccf_demo.ipynb](https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb) —
+  the **cross-correlation (CCF)** functions vs **pyZDCF**, including a case with two
+  coupled Ornstein-Uhlenbeck series for which the theoretical CCF is known analytically.
 
 ## Benchmark
 
