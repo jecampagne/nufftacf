@@ -518,6 +518,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cross-correlation-between-two-irregularly-sampled-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation between two irregularly-sampled series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#notebooks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -661,6 +672,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cross-correlation-between-two-irregularly-sampled-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-correlation between two irregularly-sampled series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#notebooks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -728,9 +750,19 @@
 <td><code>compute_acf_gaussian_fft</code> / <code>compute_acf_rectangle_fft</code> / <code>compute_acf_regular_fft</code></td>
 <td style="text-align: center;">100–400× faster than NUFFT on regular grids</td>
 </tr>
+<tr>
+<td><strong>Cross-correlation</strong>, long (<span class="arithmatex">\(\gtrsim~10,000\)</span> pts)</td>
+<td><code>compute_ccf_gaussian_nufft</code> / <code>compute_ccf_rectangle_nufft</code></td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n\log n)\)</span> fastest</td>
+</tr>
+<tr>
+<td><strong>Cross-correlation</strong>, any length</td>
+<td><code>compute_ccf_gaussian_realspace</code> / <code>compute_ccf_rectangle_realspace</code></td>
+<td style="text-align: center;"><span class="arithmatex">\(O(n)\)</span> per lag, artifact-free</td>
+</tr>
 </tbody>
 </table>
-<p>All functions share the same signature:</p>
+<p>All ACF functions share the same signature:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>                     <span class="c1"># no-kernel (&quot;regular&quot;) variant</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>      <span class="c1"># gaussian / rectangle variants</span>
 </code></pre></div>
@@ -741,65 +773,132 @@
 <li><code>bin_width</code> — kernel half-width (gaussian σ or rectangle half-width), same units as <code>t</code></li>
 <li>Returns <code>(c, b)</code> — ACF estimate and effective pair count, both shape <code>(len(lags),)</code></li>
 </ul>
+<p>The CCF functions take a second <code>(s, y)</code> series in addition to <code>(t, x)</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>s</code> — sample times of the second series, sorted ascending, on the <strong>same time
+  origin as <code>t</code></strong> (see the warning below)</li>
+<li><code>y</code> — signal values of the second series, same length as <code>s</code></li>
+<li>Returns <code>(c, b)</code> — CCF estimate (Pearson-normalised, <code>c ~ 1</code> at perfect correlation)
+  and effective pair count, both shape <code>(len(lags),)</code>. By convention a positive lag
+  means <code>y</code> lags behind <code>x</code> (the CCF peaks at <code>lag = tau0</code> when <code>y(t) ~ x(t - tau0)</code>)</li>
+</ul>
 <h2 id="irregularly-sampled-series-nufft-path">Irregularly-sampled series (NUFFT path)<a class="headerlink" href="#irregularly-sampled-series-nufft-path" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">,</span> <span class="n">t_numeric_of</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># A pandas Series with a DatetimeIndex works directly</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">idx</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2005-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">3650</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># simulate some irregular gaps</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3650</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.3</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">sts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3650</span><span class="p">)[</span><span class="n">mask</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">)</span>          <span class="c1"># lags 1..365 days</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">t</span>    <span class="o">=</span> <span class="n">t_numeric_of</span><span class="p">(</span><span class="n">sts</span><span class="p">)</span>               <span class="c1"># timedelta -&gt; float days</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="n">x</span>    <span class="o">=</span> <span class="n">sts</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">,</span> <span class="n">t_numeric_of</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># A pandas Series with a DatetimeIndex works directly</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">idx</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="s2">&quot;2005-01-01&quot;</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="mi">3650</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># simulate some irregular gaps</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">3650</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.3</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">sts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3650</span><span class="p">)[</span><span class="n">mask</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">idx</span><span class="p">[</span><span class="n">mask</span><span class="p">])</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">)</span>          <span class="c1"># lags 1..365 days</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">t</span>    <span class="o">=</span> <span class="n">t_numeric_of</span><span class="p">(</span><span class="n">sts</span><span class="p">)</span>               <span class="c1"># timedelta -&gt; float days</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="n">x</span>    <span class="o">=</span> <span class="n">sts</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="regularly-sampled-series-classic-fft-path">Regularly-sampled series (classic FFT path)<a class="headerlink" href="#regularly-sampled-series-classic-fft-path" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_fft</span><span class="p">,</span> <span class="n">compute_acf_regular_fft</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">3650</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>         <span class="c1"># integer day indices</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># With Gaussian smoothing kernel</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">c_gauss</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_fft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Without smoothing kernel (matches Pastas&#39; bin_method=&quot;regular&quot; exactly)</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="n">c_reg</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_regular_fft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_acf_gaussian_fft</span><span class="p">,</span> <span class="n">compute_acf_regular_fft</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">n</span> <span class="o">=</span> <span class="mi">3650</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>         <span class="c1"># integer day indices</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">)</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="c1"># With Gaussian smoothing kernel</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">c_gauss</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_gaussian_fft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="c1"># Without smoothing kernel (matches Pastas&#39; bin_method=&quot;regular&quot; exactly)</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">c_reg</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_acf_regular_fft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The <code>_fft</code> estimators raise <code>ValueError</code> if <code>t</code> is not regularly spaced.
 Use the <code>_nufft</code> or <code>_realspace</code> estimators for irregular data.</p>
 </div>
+<h2 id="cross-correlation-between-two-irregularly-sampled-series">Cross-correlation between two irregularly-sampled series<a class="headerlink" href="#cross-correlation-between-two-irregularly-sampled-series" title="Permanent link">&para;</a></h2>
+<p>The CCF estimators (<code>compute_ccf_gaussian_nufft</code>, <code>compute_ccf_rectangle_nufft</code>,
+<code>compute_ccf_gaussian_realspace</code>, <code>compute_ccf_rectangle_realspace</code>) compare two
+irregularly-sampled series <code>(t, x)</code> and <code>(s, y)</code>, which may have different lengths
+and different sampling times.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code>t</code> and <code>s</code> must be expressed on a <strong>common</strong> time origin (e.g. elapsed days
+since the same reference date for both series). <code>t_numeric_of</code> alone uses each
+series' own first sample as origin, which is <strong>not</strong> suitable here — applying
+it separately to <code>x</code> and <code>y</code> would silently misalign the lags. Build <code>t</code>/<code>s</code>
+from a shared reference date instead, as in the example below.</p>
+</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">nufftacf</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_ccf_gaussian_nufft</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Two irregularly-sampled series on a COMMON time origin (elapsed days since</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># the same reference date), with y lagging behind x by tau0 = 60 days</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">ref_date</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="s2">&quot;2000-01-01&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">n_days</span><span class="p">,</span> <span class="n">tau0</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">=</span> <span class="mi">3650</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mf">10.0</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># shared latent Ornstein-Uhlenbeck-like signal (ACF ~ exp(-|u|/alpha))</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">alpha</span><span class="p">)</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="n">noise</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">standard_normal</span><span class="p">(</span><span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">)</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_days</span> <span class="o">+</span> <span class="n">tau0</span><span class="p">):</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">z</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">noise</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="n">mask_x</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n_days</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.6</span>   <span class="c1"># series 1: ~40% of days kept</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="n">mask_y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n_days</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.4</span>   <span class="c1"># series 2: ~60% of days kept</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">)[</span><span class="n">mask_x</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>   <span class="c1"># elapsed days, series 1</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_days</span><span class="p">)[</span><span class="n">mask_y</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>   <span class="c1"># elapsed days, series 2 (same origin as t)</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="n">x</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">tau0</span><span class="p">:][</span><span class="n">mask_x</span><span class="p">]</span>     <span class="c1"># x(t)   = z(t)</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="n">y</span> <span class="o">=</span> <span class="n">z</span><span class="p">[:</span><span class="n">n_days</span><span class="p">][</span><span class="n">mask_y</span><span class="p">]</span>   <span class="c1"># y(t)   = z(t - tau0)  -&gt; y lags x by tau0 days</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="n">lags</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">181.0</span><span class="p">)</span>   <span class="c1"># 1 to 180 days</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="n">c</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">compute_ccf_gaussian_nufft</span><span class="p">(</span><span class="n">lags</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bin_width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="c1"># c: CCF estimate per lag, peaks at lag = tau0 = 60</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="c1"># b: effective number of contributing pairs per lag</span>
+</code></pre></div>
+<p>For a worked comparison against <strong>pyZDCF</strong>, including a case with a known
+theoretical CCF, see
+<a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb"><code>notebook/nufftacf_ccf_demo.ipynb</code></a>.</p>
 <h2 id="notebooks">Notebooks<a class="headerlink" href="#notebooks" title="Permanent link">&para;</a></h2>
-<p>Two Colab-ready notebooks are included in <code>notebook/</code>:</p>
+<p>Colab-ready notebooks are included in <code>notebook/</code>:</p>
 <ul>
 <li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftact.ipynb"><code>pastas_vs_nufftact.ipynb</code></a> —
   <strong>irregularly-sampled</strong> series (sine and AR(1)-like, with gaps), NUFFT path vs Pastas.</li>
 <li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/pastas_vs_nufftacf_regular.ipynb"><code>pastas_vs_nufftacf_regular.ipynb</code></a> —
   <strong>regularly-sampled</strong> series (sine, noisy sine, exponential, constant, square wave),
   classic-FFT path vs Pastas for all three bin methods.</li>
+<li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/zdcf_vs_nufftacf.ipynb"><code>zdcf_vs_nufftacf.ipynb</code></a> —
+  <strong>nufftacf</strong> vs <strong>pyZDCF</strong> on the same irregularly-sampled series as above.</li>
+<li><a href="https://github.com/jecampagne/nufftacf/blob/main/notebook/nufftacf_ccf_demo.ipynb"><code>nufftacf_ccf_demo.ipynb</code></a> —
+  the <strong>cross-correlation (CCF)</strong> functions vs <strong>pyZDCF</strong>, including a case with two
+  coupled Ornstein-Uhlenbeck series for which the theoretical CCF is known analytically.</li>
 </ul>
-<p>Both install <code>nufftacf</code> directly from GitHub in their first cell — no local setup needed
+<p>All install <code>nufftacf</code> directly from GitHub in their first cell — no local setup needed
 to run them on Colab.</p>
 <h2 id="benchmark-scripts">Benchmark scripts<a class="headerlink" href="#benchmark-scripts" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[benchmark]&quot;</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># Irregular data: Pastas vs _nufft</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>python<span class="w"> </span>benchmark/benchmark_acf.py
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf.py
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Regular data: Pastas vs _fft vs _nufft, all three bin methods</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>python<span class="w"> </span>benchmark/benchmark_acf_regular.py
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf_regular.py<span class="w"> </span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[benchmark]&quot;</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># Irregular data: Pastas vs _nufft</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>python<span class="w"> </span>benchmark/benchmark_acf.py
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf.py
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Regular data: Pastas vs _fft vs _nufft, all three bin methods</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>python<span class="w"> </span>benchmark/benchmark_acf_regular.py
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>python<span class="w"> </span>benchmark/fit_benchmark_acf_regular.py<span class="w"> </span>
 </code></pre></div>
 <p>Example results (Apple Silicon Mac) are stored in <code>benchmark/</code>.</p>
+<p>No dedicated benchmark script is provided for the CCF estimators against
+<strong>pyZDCF</strong>, but the plots in <code>nufftacf_ccf_demo.ipynb</code> show <code>nufftacf</code> running
+roughly two orders of magnitude faster.</p>
 
 
 
