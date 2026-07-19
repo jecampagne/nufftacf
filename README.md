@@ -13,10 +13,12 @@
 
 
 
-Fast autocorrelation function (ACF) estimation for **irregularly- and
-regularly-sampled** time series, scaling as $O(n\log n)$ thanks notably to the Nonuniform Fast Fourier Transform library developped by the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)). 
+Fast **autocorrelation** (ACF) and **cross-correlation** (CCF) function estimation
+for **irregularly- and regularly-sampled** time series, scaling as $O(n\log n)$
+thanks notably to the **Nonuniform Fast Fourier Transform** library developped by
+the Flatiron Institut ([FINUFFT](https://github.com/flatironinstitute/finufft)).
 
-With **`nufftacf`** three estimator families are provided:
+With **`nufftacf`** three estimator families are provided for the ACF:
 
 | Function | Sampling | Method | Scaling | Notes |
 |---|---|---|---|---|
@@ -28,10 +30,41 @@ With **`nufftacf`** three estimator families are provided:
 | `compute_acf_rectangle_fft` | **regular only** | classic FFT correlation + box filter | $\sim~O(n\log n)$ | faster than `_nufft`/`_realspace` on regular data (no NUFFT/numba overhead) |
 | `compute_acf_gaussian_fft` | **regular only** | classic FFT correlation + gaussian filter |$\sim~O(n\log n)$ | same |
 
-All seven share the same calling convention: `fn(lags, t, x, bin_width=0.5)`
-(`compute_acf_regular_fft` has no `bin_width`, since it applies no
-smoothing kernel), and return `(c, b)` -- the ACF estimate and the
-effective pair count, both shape `(len(lags),)`.
+All seven ACF functions share the same calling convention:
+`fn(lags, t, x, bin_width=0.5)` (`compute_acf_regular_fft` has no
+`bin_width`, since it applies no smoothing kernel), and return `(c, b)` --
+the ACF estimate and the effective pair count, both shape `(len(lags),)`.
+
+### Cross-correlation functions (CCF)
+
+The same NUFFT + Wiener-Khinchin and real-space machinery is also available
+for the **cross-correlation function** between two **irregularly-sampled**
+series `(t, x)` and `(s, y)`, which may have different lengths and different
+sampling times:
+
+| Function | Sampling | Method | Scaling | Notes |
+|---|---|---|---|---|
+| `compute_ccf_gaussian_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ | fastest for long irregular series; same residual-bias caveat as the ACF `_nufft` variants |
+| `compute_ccf_rectangle_nufft` | irregular | NUFFT + Wiener-Khinchin | $\sim~O(n\log n)$ | same caveat as above |
+| `compute_ccf_gaussian_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+| `compute_ccf_rectangle_realspace` | irregular or regular | direct real-space weighted sum | $O(n)$ per lag | artifact-free reference |
+
+All four share the calling convention `fn(lags, t, x, s, y, bin_width=0.5)`
+and return `(c, b)` -- the CCF estimate (Pearson-normalised, `c ~ 1` at
+perfect correlation) and the effective pair count, both shape `(len(lags),)`.
+By convention, a positive lag means `y` lags behind `x` (i.e. the CCF peaks
+at `lag = tau0` when `y(t) ~ x(t - tau0)`).
+
+**Important:** `t` and `s` must be expressed on a *common* time origin (e.g.
+elapsed days since the same reference date for both series). `t_numeric_of`
+alone uses each series' own first sample as origin, which is **not** suitable
+for two independently-sampled series -- using it separately on `x` and `y`
+would silently misalign the lags. Build `t`/`s` from a shared reference date
+instead (see the example below).
+
+For a worked comparison against **pyZDCF**, including a case with a known
+theoretical CCF, see
+[`notebook/nufftacf_ccf_demo.ipynb`](notebook/nufftacf_ccf_demo.ipynb).
 
 ## Documentation
 
@@ -80,7 +113,41 @@ c, b = compute_acf_gaussian_nufft(lags, t, x.to_numpy(), bin_width=0.5)
 #    under-sampled lags, e.g. mask out lags where b is too small)
 ```
 
+### Cross-correlation example
 
+```python
+import numpy as np
+import pandas as pd
+from nufftacf import compute_ccf_gaussian_nufft
+
+# Two irregularly-sampled series on a COMMON time origin (elapsed days since
+# the same reference date), with y lagging behind x by tau0 = 60 days
+ref_date = pd.Timestamp("2000-01-01")
+n_days, tau0, alpha = 3650, 60, 10.0
+rng = np.random.default_rng(0)
+
+# shared latent Ornstein-Uhlenbeck-like signal (ACF ~ exp(-|u|/alpha))
+phi = np.exp(-1.0 / alpha)
+noise = rng.standard_normal(n_days + tau0)
+z = np.empty(n_days + tau0)
+z[0] = noise[0]
+for i in range(1, n_days + tau0):
+    z[i] = phi * z[i - 1] + noise[i]
+
+mask_x = rng.random(n_days) > 0.6   # series 1: ~40% of days kept
+mask_y = rng.random(n_days) > 0.4   # series 2: ~60% of days kept
+
+t = np.arange(n_days)[mask_x].astype(float)   # elapsed days, series 1
+s = np.arange(n_days)[mask_y].astype(float)   # elapsed days, series 2 (same origin as t)
+
+x = z[tau0:][mask_x]     # x(t)   = z(t)
+y = z[:n_days][mask_y]   # y(t)   = z(t - tau0)  -> y lags x by tau0 days
+
+lags = np.arange(1.0, 181.0)   # 1 to 180 days
+c, b = compute_ccf_gaussian_nufft(lags, t, x, s, y, bin_width=0.5)
+# c: CCF estimate per lag, peaks at lag = tau0 = 60
+# b: effective number of contributing pairs per lag
+```
 
 ## Which estimator should I use?
 
@@ -146,6 +213,11 @@ hot path. All three raise `ValueError` if `t` isn't regularly spaced (use
   noisy exponential decay, square wave), using the `_fft` estimators,
   for all 3 of Pastas' bin methods (`regular`/`rectangle`/`gaussian`).
 - [`zdcf_vs_nufftacf.ipynb`](`notebook/zdcf_vs_nufftacf.ipynb) compares **nufftacf** against **pyzdcf** on the same **irregularly**-sampled series used in the `pastas_vs_nufftact.ipynb`.
+- [`nufftacf_ccf_demo.ipynb`](notebook/nufftacf_ccf_demo.ipynb) demonstrates the
+  **cross-correlation (CCF)** functions (`compute_ccf_gaussian_nufft`,
+  `compute_ccf_rectangle_nufft`) against **pyZDCF**, including a case with two
+  series built from coupled Ornstein-Uhlenbeck processes for which the
+  theoretical CCF is known analytically.
 
 All are Colab-ready: the first cell installs **nufftacf** as well as **Pastas** or **pyzdcf** and third party libraries. Concerning **pyzdcf**, the repository was cloned and adapted to ensure compatibility with the pandas and other library versions used in this notebook, allowing it to run on Google Colab. These changes do not affect the quality of the computations.
 
