@@ -10,6 +10,8 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ## NUFFT estimators
 
+### Autocorrelation (ACF)
+
 ::: nufftacf.nufft_acf
     options:
       show_root_heading: true
@@ -20,6 +22,17 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
         - compute_acf_gaussian_nufft
         - compute_acf_rectangle_nufft
 
+### Cross-correlation (CCF)
+
+::: nufftacf.nufft_ccf
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_ccf_gaussian_nufft
+        - compute_ccf_rectangle_nufft
 
 ## Classic-FFT estimators (regular data only)
 
@@ -36,6 +49,8 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
 
 ## Real-space estimators
 
+### Autocorrelation (ACF)
+
 ::: nufftacf.realspace_acf
     options:
       show_root_heading: true
@@ -45,6 +60,18 @@ from nufftacf import compute_acf_gaussian_nufft, compute_acf_regular_fft, ...
       members:
         - compute_acf_gaussian_realspace
         - compute_acf_rectangle_realspace
+
+### Cross-correlation (CCF)
+
+::: nufftacf.realspace_ccf
+    options:
+      show_root_heading: true
+      show_signature: true
+      show_signature_annotations: true
+      separate_signature: true
+      members:
+        - compute_ccf_gaussian_realspace
+        - compute_ccf_rectangle_realspace
 ---
 
 ## Kernel helpers
